@@ -20,6 +20,8 @@
   },
   "devDependencies": {
     "grunt": "~0.4.1",
-    "grunt-release": "~0.3.5"
+    "grunt-release": "~0.3.5",
+    "which": "^1.0.5",
+    "crosswalk-apk-generator": "0.0.10"
   }
 }
