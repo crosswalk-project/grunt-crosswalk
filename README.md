@@ -31,13 +31,13 @@ Once the plugin has been installed, enable it with a line of JavaScript in your 
       // grunt.initConfig({ ... }) etc.
     };
 
-# Dependencies
-
 grunt-crosswalk has been tested on:
 
 *   Ubuntu Linux (64bit)
 *   Ubuntu Linux (32bit)
 *   Windows 7 Enterprise (64bit)
+
+# Dependencies
 
 grunt-crosswalk depends on the [crosswalk-apk-generator]
 (https://github.com/crosswalk-project/crosswalk-apk-generator) and shares
