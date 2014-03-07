@@ -1,0 +1,25 @@
+{
+  "name": "grunt-crosswalk",
+  "version": "0.0.1",
+  "description": "grunt task for packaging apps into apk files",
+  "main": "tasks/grunt-crosswalk.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crosswalk-project/grunt-crosswalk.git"
+  },
+  "contributors": [
+    {
+      "name": "Max Waterman",
+      "email": "<max.waterman@intel.com>"
+    }
+  ],
+  "license": "Apache v2",
+  "readmeFilename": "README.md",
+  "engine": {
+    "node": "~0.8.14"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-release": "~0.3.5"
+  }
+}
