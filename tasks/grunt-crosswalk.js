@@ -72,19 +72,6 @@ module.exports = function (grunt) {
       }
     }
 
-    if (!envConfig.androidAPIVersion) {
-      // get the api latest version from androidSDK/build-tools
-      var platformsDir = path.join(envConfig.androidSDKDir,"platforms");
-      var files = fs.readdirSync(platformsDir);
-      var androidAPIVersions = _.map(files,function(file) {
-          var bits = file.split("-");
-          return bits[bits.length-1];
-      });
-      var sorted = androidAPIVersions.sort(semver.compare);
-      var latest = sorted[sorted.length-1];
-      envConfig.androidAPIVersion = latest;
-    }
-
     var logger = grunt.log;
     logger.log = logger.write; // Api.CommandRunner calls logger.log()
 
