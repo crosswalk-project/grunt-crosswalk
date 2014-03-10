@@ -41,20 +41,105 @@ grunt-crosswalk has been tested on:
 
 grunt-crosswalk depends on the [crosswalk-apk-generator]
 (https://github.com/crosswalk-project/crosswalk-apk-generator) and shares
-its dependencies. In general, the Android SDK should be installed and
-setup up correctly, particularly the 'android' (or 'android.bat' on
-Windows) command should be in the PATH; and the Crosswalk SDK should be
-installed and the XWALK_APP_TEMPLATE environment variable set to point
-to the xwalk_app_template directory within it.
+its dependencies.
 
 # General configuration
 
-TODO
+The [Android SDK](http://developer.android.com/sdk/index.html) should
+be installed and setup up correctly, particularly the 'android' (or
+'android.bat' on MS Windows) command should be in the PATH. Also, the
+Crosswalk SDK should be installed and the XWALK_APP_TEMPLATE environment
+variable set to point to the xwalk_app_template directory within it.
 
 # Tasks
 
-TODO
+You can list tasks in the *crosswalk* target. Each one
+should contain the configuration data necessary to control
+and build the application into desired apk package. All the
+configuration items are detailed in the [crosswalk-apk-generator]
+(https://github.com/crosswalk-project/crosswalk-apk-generator) in
+the README file.  The *outDir*, *name*, and *version* properties are
+required. Outdir specifies the directory where the generator will output
+the files, and *name* and *version* are the name and version number of
+the application.
 
 ## Example Gruntfile.js
 
-TODO
+'''
+  grunt.initConfig({
+    ...
+    packageInfo: grunt.file.readJSON('package.json'),
+    ...
+    crosswalk: {
+      x86: {
+        //outDir: process.env.HOME+'/z/webapps/webapps-annex/build',
+        outDir: 'build',
+
+        verbose: false,
+
+        version: '<%= packageInfo.version %>',
+
+        // display name for the app on the device;
+        // the sanitisedName used to construct the Locations object later
+        // is derived from this
+        name: '<%= packageInfo.name %>',
+
+        // package for the app's generated Java files; this works best if
+        // you have at least one period character between two character
+        // strings, and no digits
+        pkg: 'org.org01.webapps.<%= packageInfo.name.toLowerCase() %>',
+
+        // the icon used in the android launcher/etc
+        icon: 'icon_128.png',
+
+        // should the app run as fullscreen
+        fullscreen: true,
+
+        // should the app run with remote debugging enabled
+        remoteDebugging: true,
+
+        // path to the directory containing your HTML5 app;
+        // note that this must use the correct path separators for your
+        // platform: Windows uses '\\' while Linux uses '/'
+        appRoot: 'build/xpk',
+
+        // the main html files of your app relative to the appRoot
+        appLocalPath: 'index.html',
+
+        // embed crosswalk itself into the package
+        // set to false to make the app use a shared version of crosswalk
+        // that is installed separately (apks in the crosswalk download)
+        //embedded: true,
+
+        // path to the root of your Android SDK installation;
+        // on Windows, use the path to the sdk directory inside
+        // the installation, e.g. 'c:\\android-sdk\\sdk'
+        // default: automatically obtain from the 'android' command's path
+        //androidSDKDir: '/opt/android-sdk-linux/',
+        //androidSDKDir: '/opt/adt-bundle-linux-x86_64-20131030/sdk',
+
+        // path to the xwalk_app_template directory; you can either 
+        // download and unpack this manually, or use the xwalk_android_dl
+        // script to do so (part of the crosswalk-apk-generator project;
+        // see the [README](https://github.com/crosswalk-project/crosswalk-apk-generator/blob/master/README.md) for details.).
+        // note that path separators specific to your platform must be used
+        // can be set via an environment variable :
+        // eg: export XWALK_APP_TEMPLATE=$HOME/Downloads/crosswalk-3.32.53.4-x86/xwalk_app_template
+        //xwalkAndroidDir: process.env.HOME+"/Downloads/crosswalk-3.32.53.4-x86/xwalk_app_template"
+
+        // architecture of embedded crosswalk
+        // default: it is obtained from the contents of
+        // xwalkAndroidDir/native_libs/ if there is only one arch in there,
+        // else it should be specified as either 'x86' or 'arm'
+        arch: 'x86',
+
+        // default: automatically obtains latest from androidSDKDir/platforms
+        // picks latest version available satisfying what is specified
+        //androidAPIVersion: "18.0.1"
+        //androidAPIVersion: "18"
+      },
+      ...
+    },
+    ...
+  }
+'''
