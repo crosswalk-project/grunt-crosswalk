@@ -7,20 +7,28 @@ module.exports = function (grunt) {
 
   var Api = require('crosswalk-apk-generator');
 
-  var generate_apk = function(data,done) {
-    var outDir = data.outDir || '.';
+  var generate_apk = function(target,done) {
+    var data = target.data;
+    var options = target.options();
+    var outDir = data.outDir || options.outDir || '.';
     var appConfig = {};
     var envConfig = {};
 
-    // copy user-supplied parameters into envConfig or appConfig
     var envProperties = Object.keys(Api.Env.CONFIG_DEFAULTS);
-    Object.keys(data).forEach(function(property){
-      if (envProperties.indexOf(property)!=-1) {
-        envConfig[property] = data[property];
-      } else {
-        appConfig[property] = data[property];
-      }
-    });
+    var copyProperties = function(hash) {
+      // copy user-supplied properties into envConfig or appConfig
+      Object.keys(hash).forEach(function(property){
+        if (envProperties.indexOf(property)!=-1) {
+          envConfig[property] = hash[property];
+        } else {
+          appConfig[property] = hash[property];
+        }
+      });
+    };
+
+    // get user-supplied properties
+    copyProperties(options); // set crosswalk:options first
+    copyProperties(data); // properties in target override options
 
     // automatically find androidSDKDir from 'android' command in PATH
     if (!envConfig.androidSDKDir) {
@@ -40,35 +48,29 @@ module.exports = function (grunt) {
     }
 
     // determine arch from xwalkAndroidDir/native_libs/
-    if (envConfig.xwalkAndroidDir) {
+    // only if arch specified (ie not shared)
+    if (envConfig.arch && envConfig.xwalkAndroidDir) {
       var nativeLibs = path.join(envConfig.xwalkAndroidDir,'native_libs');
-      var arches = fs.readdirSync(nativeLibs);
+      var arches;
+      try {
+        arches = fs.readdirSync(nativeLibs);
+      } catch(err) {
+        grunt.log.error('Error looking for $XWALK_APP_TEMPLATE/native_libs.');
+        grunt.log.error('Did you set XWALK_APP_TEMPLATE correctly?');
+        grunt.log.error(err);
+        done(false);
+        return;
+      }
 
-      if (envConfig.arch) {
-        // check it matches
-        var foundArch = arches[0].slice(0,3);
-        var specified = envConfig.arch.slice(0,3);
-        if (foundArch!=specified) {
-          grunt.log.error('\'arch\' property set to ('+specified+') in Gruntfile.js, but no app template for that architecture found.');
-          grunt.log.error('architectures found :', arches);
-          grunt.log.error('have you set xwalkAndroidDir property or XWALK_APP_TEMPLATE correctly?');
-          grunt.log.error('XWALK_APP_TEMPLATE: ', process.env.XWALK_APP_TEMPLATE);
-          done(false);
-        }
-      } else {
-        // use the one in native_libs, if only one
-        if (arches.length==0) {
-          grunt.log.error('no architectures found in '+nativeLibs);
-          done(false);
-        } else
-        if (arches.length>1) {
-          grunt.log.error('multiple architectures found in '+nativeLibs);
-          grunt.log.error('please specify using the \'arch\' property in your Gruntfile.js');
-          done(false);
-        }
-
-        // use discovered
-        envConfig.arch = arches[0];
+      var foundArch = arches[0].slice(0,3);
+      var specified = envConfig.arch.slice(0,3);
+      if (foundArch!=specified) {
+        grunt.log.error('\'arch\' property set to ('+specified+') in Gruntfile.js, but no app template for that architecture found.');
+        grunt.log.error('architectures found :', arches);
+        grunt.log.error('have you set xwalkAndroidDir property or XWALK_APP_TEMPLATE correctly?');
+        grunt.log.error('XWALK_APP_TEMPLATE: ', process.env.XWALK_APP_TEMPLATE);
+        done(false);
+        return;
       }
     }
 
@@ -94,7 +96,7 @@ module.exports = function (grunt) {
         var app = objects[1];
 
         // create a Locations object for this App instance
-        var locations = Api.Locations(app.sanitisedName, app.pkg, env.arch, outDir);
+        var locations = Api.Locations(app, env, outDir);
 
         // run the build
         return env.build(app, locations);
@@ -123,15 +125,18 @@ module.exports = function (grunt) {
   *
   * Configuration options:
   *
-  *   appName - the name of the application; used as the base filename
-  *   outDir - output directory to put the zipfile into
-  *   version - application version
+  *   config options are inhereted automatically from
+  *   crosswalk-apk-generator, so please see it's README for more info
+  *
+  *   Note that there is no need to separate them into 'env' or 'app',
+  *   but they can be shared between grunt targets by putting them
+  *   in the 'crosswalk:options' property.
   *
   */
   grunt.registerMultiTask('crosswalk', 'Tasks for generating apk packages for crosswalk on Android', function (identifier) {
     var done = this.async();
 
-    generate_apk(this.data, done);
+    generate_apk(this, done);
   });
 
 };
