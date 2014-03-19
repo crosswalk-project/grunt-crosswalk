@@ -65,13 +65,13 @@ the application.
 
 ## Example Gruntfile.js
 
-'''
+```
   grunt.initConfig({
     ...
     packageInfo: grunt.file.readJSON('package.json'),
     ...
     crosswalk: {
-      x86: {
+      options: {
         //outDir: process.env.HOME+'/z/webapps/webapps-annex/build',
         outDir: 'build',
 
@@ -106,11 +106,6 @@ the application.
         // the main html files of your app relative to the appRoot
         appLocalPath: 'index.html',
 
-        // embed crosswalk itself into the package
-        // set to false to make the app use a shared version of crosswalk
-        // that is installed separately (apks in the crosswalk download)
-        //embedded: true,
-
         // path to the root of your Android SDK installation;
         // on Windows, use the path to the sdk directory inside
         // the installation, e.g. 'c:\\android-sdk\\sdk'
@@ -127,19 +122,22 @@ the application.
         // eg: export XWALK_APP_TEMPLATE=$HOME/Downloads/crosswalk-3.32.53.4-x86/xwalk_app_template
         //xwalkAndroidDir: process.env.HOME+"/Downloads/crosswalk-3.32.53.4-x86/xwalk_app_template"
 
-        // architecture of embedded crosswalk
-        // default: it is obtained from the contents of
-        // xwalkAndroidDir/native_libs/ if there is only one arch in there,
-        // else it should be specified as either 'x86' or 'arm'
-        arch: 'x86',
-
         // default: automatically obtains latest from androidSDKDir/platforms
         // picks latest version available satisfying what is specified
         //androidAPIVersion: "18.0.1"
         //androidAPIVersion: "18"
       },
+      shared: {
+        // properties defined here override the ones in options
+      },
+      x86: {
+        // architecture of embedded crosswalk
+        // if not defined, then a shared apk is built,
+        // else it should be specified as either 'x86' or 'arm'
+        arch: 'x86'
+     }
       ...
     },
     ...
   }
-'''
+```
