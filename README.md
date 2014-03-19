@@ -123,17 +123,16 @@ the application.
         //xwalkAndroidDir: process.env.HOME+"/Downloads/crosswalk-3.32.53.4-x86/xwalk_app_template"
 
         // default: automatically obtains latest from androidSDKDir/platforms
-        // picks latest version available satisfying what is specified
-        //androidAPIVersion: "18.0.1"
-        //androidAPIVersion: "18"
+        //androidAPILevel: "18.0.1"
+        //androidAPILevel: "18"
       },
-      shared: {
+      shared_build: {
         // properties defined here override the ones in options
       },
-      x86: {
+      x86_build: {
         // architecture of embedded crosswalk
-        // if not defined, then a shared apk is built,
-        // else it should be specified as either 'x86' or 'arm'
+        // if arch is defined for a target, an embedded apk is built;
+        // otherwise, a shared one is built
         arch: 'x86'
      }
       ...
