@@ -62,9 +62,16 @@ module.exports = function (grunt) {
         return;
       }
 
-      var foundArch = arches[0].slice(0,3);
-      var specified = envConfig.arch.slice(0,3);
-      if (foundArch!=specified) {
+      var archIsFound = false;
+      var archIndex=0;
+      while (!archIsFound && archIndex<arches.length) {
+        var foundArch = arches[archIndex].slice(0,3);
+        var specified = envConfig.arch.slice(0,3);
+        archIsFound = (foundArch==specified);
+        archIndex++;
+      }
+
+      if (!archIsFound) {
         grunt.log.error('\'arch\' property set to ('+specified+') in Gruntfile.js, but no app template for that architecture found.');
         grunt.log.error('architectures found :', arches);
         grunt.log.error('have you set xwalkAndroidDir property or XWALK_APP_TEMPLATE correctly?');
