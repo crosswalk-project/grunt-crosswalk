@@ -2,8 +2,6 @@ module.exports = function (grunt) {
   var path = require('path');
   var which = require('which');
   var fs = require('fs');
-  var semver = require('semver');
-  var _ = require('lodash');
 
   var Api = require('crosswalk-apk-generator');
 
