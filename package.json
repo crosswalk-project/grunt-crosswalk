@@ -1,6 +1,6 @@
 {
   "name": "grunt-crosswalk",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "grunt task for packaging apps into apk files",
   "main": "tasks/grunt-crosswalk.js",
   "repository": {
