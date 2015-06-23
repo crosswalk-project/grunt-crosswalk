@@ -19,8 +19,9 @@
     "node": "~0.8.14"
   },
   "dependencies": {
-    "which": "^1.0.5",
-    "crosswalk-apk-generator": "~0.0.15"
+    "crosswalk-apk-generator": "~0.0.15",
+    "semver": "^4.3.6",
+    "which": "^1.0.5"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
