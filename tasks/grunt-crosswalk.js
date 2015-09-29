@@ -1,89 +1,126 @@
 module.exports = function (grunt) {
   var spawnSync = require('child_process').spawnSync;
-  var path = require('path');
-  var which = require('which');
-  var fs = require('fs');
-  var semver = require('semver');
-  var _ = require('lodash');
+
+  var Path = require('path');
+
+  var cat = require("crosswalk-app-tools");
+
+  /**
+  * Output class (implements OutputIface) that
+  * silently swallows all the messages.
+  */
+  function SilentOutput() {
+    cat.OutputIface.apply(this, arguments);
+  }
+
+  SilentOutput.prototype = Object.create(cat.OutputIface.prototype);
+  SilentOutput.prototype.constructor = SilentOutput;
+
+  SilentOutput.prototype.error =
+  function(message) {};
+
+  SilentOutput.prototype.warning =
+  function(message) {};
+
+  SilentOutput.prototype.info =
+  function(message) {};
+
+  SilentOutput.prototype.highlight =
+  function(message) {};
+
+  SilentOutput.prototype.write =
+  function(message) {};
 
   var generate_apk = function(target,done) {
     var data = target.data;
     var options = target.options();
-    var outDir = data.outDir || options.outDir || '.';
 
-    // crosswalk-app create org.org01.webapps.annex
-    // && rm -rf org.org01.webapps.annex/app
-    // && cp -r build/xpk org.org01.webapps.annex/app
-    // && cd org.org01.webapps.annex
-    // && crosswalk-app build org.org01.webapps.annex
-    // && cd ..
+    var projectRoot = process.cwd();
 
-    var commands = {
-
-      'crosswalk-app-create': {
-        cmd: 'crosswalk-app',
-        args: [
-          'create',
-          options.pkg
-        ],
-        options: {
-          cwd: '.',
-          stdio: 'inherit'
+    function build() {
+      var promise = new Promise(function (resolve, reject) {
+        if (options.verbose) {
+          console.log('building and packaging ' + options.pkg);
         }
-      },
 
-      'remove-sample-app': {
-        cmd: 'rm',
-        args: [
-          '-r',
-          'app'
-        ],
-        options: {
-          cwd: options.pkg,
-          stdio: 'inherit'
+        var dir = Path.join(projectRoot, options.pkg);
+        
+        cat.Application.call(cat.main, dir, null);
+
+        if (!options.verbose) {
+          cat.main.output = new SilentOutput();
         }
-      },
 
-      'copy-apk-to-app': {
-        cmd: 'cp',
-        args: [
-          '-r',
-          '../'+options.appRoot,
-          'app'
-        ],
-        options: {
-          cwd: options.pkg,
-          stdio: 'inherit'
+        cat.main.build(null, null, function (errno) {
+          if (errno != 0) {
+            console.log("Create failed with error " + errno);
+            reject();
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      return promise;
+    }
+
+    function create() {
+      var promise = new Promise(function (resolve, reject) {
+        if (options.verbose) {
+          console.log('creating template crosswalk app');
         }
-      },
 
-      'crosswalk-app-build': {
-        cmd: 'crosswalk-app',
-        args: [
-          'build',
-          options.pkg
-        ],
-        options: {
-          cwd: '.',
-          stdio: 'inherit'
+        cat.Application.call(cat.main, projectRoot, options.pkg);
+
+        if (!options.verbose) {
+          cat.main.output = new SilentOutput();
         }
-      },
 
-    };
-    
-    Object.keys(commands).forEach(function (command) {
-      var thisCmd = commands[command];
-      console.log('MAXMAXMAX:', thisCmd.cmd + ' ' + thisCmd.args.join(' '));
-      var child = spawnSync(thisCmd.cmd, thisCmd.args, thisCmd.options);
+        var args = {
+          platforms: "android"
+        };
+        cat.main.create(options.pkg, args, function (errno) {
+          if (errno != 0) {
+            console.log("Create failed with error " + errno);
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      return promise;
+    }
+
+    var cprmArgs = (options.debug?'-rv':'-r');
+
+    create()
+    .then(function () {
+      if (options.verbose) {
+        console.log('removing ' + options.pkg + '/app');
+      }
+
+      spawnSync('rm', [cprmArgs, 'app'], {cwd: options.pkg, stdio: 'inherit'});
+
+      if (options.verbose) {
+        console.log('copying from ' + options.appRoot + ' to ' + options.pkg + '/app');
+      }
+
+      spawnSync('cp', [cprmArgs, '../' + options.appRoot, 'app'], {cwd: options.pkg, stdio: 'inherit'});
+    })
+    .then(build)
+    .then(function () {
+      if (options.verbose) {
+        console.log('removing ' + options.pkg + '/');
+      }
+
+      spawnSync('rm', [cprmArgs, options.pkg], {cwd: projectRoot, stdio: 'inherit'});
     });
-
   };
 
   /**
   * Build an apk
   */
   grunt.registerMultiTask('crosswalk', 'Tasks for generating apk packages for crosswalk on Android', function (identifier) {
-    console.log('MAXMAXMAX');
     var done = this.async();
 
     generate_apk(this, done);
