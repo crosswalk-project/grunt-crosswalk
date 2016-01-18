@@ -6,7 +6,7 @@ module.exports = function (grunt) {
     var options = target.options();
     var appRoot = options.appRoot;
 
-    spawnSync('crosswalk-pkg', ['-p', 'android', appRoot], {stdio: 'inherit'});
+    spawnSync('node_modules/grunt-crosswalk/node_modules/crosswalk-app-tools/src/crosswalk-pkg', ['-p', 'android', appRoot], {stdio: 'inherit'});
   };
 
   /**
